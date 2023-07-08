@@ -68,6 +68,15 @@ def checkPort(remServerIP, port):
     print(f"\nElapsed Time: {time}")
 
 def getTarget():
+    print("""
+        ██████╗  ██████╗ ██████╗ ████████╗    ███████╗ ██████╗ █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗ 
+        ██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝    ██╔════╝██╔════╝██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗
+        ██████╔╝██║   ██║██████╔╝   ██║       ███████╗██║     ███████║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝
+        ██╔═══╝ ██║   ██║██╔══██╗   ██║       ╚════██║██║     ██╔══██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗
+        ██║     ╚██████╔╝██║  ██║   ██║       ███████║╚██████╗██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║
+        ╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
+                                                                                                        
+    """)
     givenData = input("Enter hostname or IP to scan: ")
     ipPattern = '^(?:(25[0-5]|(?:2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$'
     result = re.match(ipPattern, givenData)
@@ -82,6 +91,7 @@ def getPort():
     return port
 
 def banner(port):
+    print("\n")
     if port: 
         print("*" * 50)
         print(f"Scanning remote host ({remServerIP}) for port {port} ")
@@ -100,8 +110,8 @@ def scan(port):
         scanPorts(remServerIP)
 
 subprocess.call('cls', shell=True) # Clears screen
-
+subprocess.Popen('color 4', shell=True) # Change color
 remServerIP = getTarget() 
 port = int(getPort())
 scan(port)
-
+subprocess.Popen('color 0F', shell=True)
