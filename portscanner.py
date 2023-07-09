@@ -4,7 +4,7 @@ import sys
 import re
 from datetime import datetime
 
-def scanPorts(remServerIP):
+def scanMultiple(remServerIP):
     startTime = datetime.now()
     try:
         for port in range(1,1065):
@@ -20,14 +20,17 @@ def scanPorts(remServerIP):
 
     except KeyboardInterrupt:
         print("Oops, you pressed CTRL+C")
+        subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
     except socket.gaierror:
         print("Oops, hostname could not be resolved.")
+        subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
     except socket.error:
         print("Couldn't connect to server")
+        subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
     endTime = datetime.now()
@@ -36,7 +39,7 @@ def scanPorts(remServerIP):
 
     print(f"\nElapsed Time: {time}")
 
-def checkPort(remServerIP, port):
+def scanOne(remServerIP, port):
     startTime = datetime.now()
     try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,14 +54,17 @@ def checkPort(remServerIP, port):
 
     except KeyboardInterrupt:
         print("Oops, you pressed CTRL+C")
+        subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
     except socket.gaierror:
         print("Oops, hostname could not be resolved.")
+        subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
     except socket.error:
         print("Couldn't connect to server")
+        subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
     endTime = datetime.now()
@@ -77,17 +83,55 @@ def getTarget():
         ╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
                                                                                                         
     """)
-    givenData = input("Enter hostname or IP to scan: ")
-    ipPattern = '^(?:(25[0-5]|(?:2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$'
-    result = re.match(ipPattern, givenData)
-    if result:
-        remServerIP = (givenData)
-    else:
-        remServerIP = socket.gethostbyname(givenData)
-    return remServerIP
+    givenData = input("Enter full hostname or IP: ")
 
+    ipPattern = '^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$'
+    ipMatch = bool(re.match(ipPattern, givenData))     
+    hnPattern = '^[A-Za-z0-9]+\.[A-Za-z]+$'
+    hnMatch = bool(re.match(hnPattern, givenData))
+
+    count = 0
+    if ipMatch:
+        return givenData
+    if hnMatch:
+        remServerIP = socket.gethostbyname(givenData)
+        return remServerIP
+
+    while not ipMatch and not hnMatch:
+        if count == 0:
+            print(">>> Invalid hostname or IP")
+        count += 1
+        if count == 2:
+            print(">>> One more chance")
+        if count == 3:
+            print("Exiting...")
+            subprocess.Popen('color 0F', shell=True)
+            sys.exit()
+        givenData = input("Enter full hostname or IP: ")
+        ipMatch = bool(re.match(ipPattern, givenData))
+        hnMatch = bool(re.match(hnPattern, givenData))
+
+        if ipMatch:
+            remServerIP = givenData 
+            return remServerIP
+        if hnMatch:
+            remServerIP = socket.gethostbyname(givenData)
+            return remServerIP
+        
 def getPort():
-    port = int(input("Scan for particular port (Enter 0 or port number): "))
+    port = int(input("Scan for particular port (Enter 0 to skip): "))
+    count = 0
+    while port > 65536:
+        if count == 0:
+            print(">>> Invalid port")
+        count += 1
+        if count == 2:
+            print(">>> One more chance")
+        if count == 3:
+            print("Exiting...")
+            sys.exit()
+        port = int(input("Scan for particular port (Enter 0 or port number): "))
+
     return port
 
 def banner(port):
@@ -104,14 +148,14 @@ def banner(port):
 def scan(port):
     if port != 0:
         banner(port) 
-        checkPort(remServerIP, port)
+        scanOne(remServerIP, port)
     else:
         banner(port)
-        scanPorts(remServerIP)
+        scanMultiple(remServerIP)
 
 subprocess.call('cls', shell=True) # Clears screen
 subprocess.Popen('color 4', shell=True) # Change color
-remServerIP = getTarget() 
+remServerIP = getTarget()
 port = int(getPort())
 scan(port)
 subprocess.Popen('color 0F', shell=True)
