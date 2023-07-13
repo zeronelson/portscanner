@@ -3,52 +3,76 @@ import re
 import subprocess
 import sys
 
-subprocess.call('cls', shell=True)
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-hostname = socket.gethostname()
-ip = socket.gethostbyname(hostname)
-print('*'*52)
-msg = "Current User"
-print("                   Current User\n            ")
-print(f"Hostname: {hostname}   IP Address: {ip}")
-print('*'*52)
-sock.close()
+def startSock():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(hostname)
+    print('*'*52)
+    msg = "Current User"
+    print("                   Current User\n            ")
+    print(f"Hostname: {hostname}   IP Address: {ip}")
+    print('*'*52)
+    sock.close()
 
-option = input("\nEnter IP or Hostname: ")
-
-ipPattern = '^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$'
-ipMatch = bool(re.match(ipPattern, option))     
-hnPattern = '^[A-Za-z0-9]+\.[A-Za-z]+$'
-hnMatch = bool(re.match(hnPattern, option))
-
-count = 0
-if ipMatch:
-    hostname = socket.gethostbyaddr(option)
-    print(f"\nHostname: {hostname}")
-if hnMatch:
-    ip = socket.gethostbyname(option)
-    print(f"\nIP: {ip}")
-
-while not ipMatch and not hnMatch:
-    if count == 0:
-        print(">>> Invalid hostname or IP")
-    count += 1
-    if count == 2:
-        print(">>> One more chance")
-    if count == 3:
-        print("Exiting...")
-        subprocess.Popen('color 0F', shell=True)
-        sys.exit()
-    option = input("Enter full hostname or IP: ")
-    ipMatch = bool(re.match(ipPattern, option))
-    hnMatch = bool(re.match(hnPattern, option))
+def findTarget(target):
+    ipPattern = '^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$'
+    ipMatch = bool(re.match(ipPattern, target))     
+    hnPattern = '^[A-Za-z0-9]+\.[Agit -Za-z]+$'
+    hnMatch = bool(re.match(hnPattern, target))
+    count = 0
 
     if ipMatch:
-        hostname = socket.gethostbyaddr(option)
-        print(f"\nHostname: {hostname}")
+        print(target)
+        target = str(target)
+        hostname = socket.gethostbyaddr(target)
+        print(f"\nHostname: {hostname[0]}")
     if hnMatch:
-        ip = socket.gethostbyname(option)
+        print(target.capitalize())
+        ip = socket.gethostbyname(target)
         print(f"\nIP: {ip}")
+
+    while not ipMatch and not hnMatch:
+        if count == 0:
+            print(">>> Invalid hostname or IP")
+        count += 1
+        if count == 2:
+            print(">>> One more chance")
+        if count == 3:
+            print("Exiting...")
+            subprocess.Popen('color 0F', shell=True)
+            sys.exit()
+        target = input("Enter full hostname or IP: ")
+        ipMatch = bool(re.match(ipPattern, target))
+        hnMatch = bool(re.match(hnPattern, target))
+
+        if ipMatch:
+            print(target)
+            hostname = socket.gethostbyaddr(target)
+            print(f"\nHostname: {hostname}")
+        if hnMatch:
+            print(target.capitalize())
+            ip = socket.gethostbyname(target)
+            print(f"\nIP: {ip}")
+    print('*'*52)
+
+def multipleTargets(targetList):
+    for x in range(len(targetList)):    
+       findTarget(targetList[x])
+
+
+subprocess.call('cls', shell=True)
+startSock()
+
+
+print("\n*** You may entire a single target or multiple targets separated by a comma ***\n")
+target = input("Enter target(s): ")
+print("\n")
 print('*'*52)
 
-
+if "," in target:
+    targetList = target.split(",")
+    targetList = [s.strip() for s in targetList]
+    multipleTargets(targetList)
+else:
+    findTarget(target)
+    
