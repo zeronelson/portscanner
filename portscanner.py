@@ -151,7 +151,7 @@ print("""
 target = input("Enter IPs/hostnames: ")
 targetPorts = input("Enter port(s) or 0 to skip: ")
 
-if  ("," in target and targetPorts) or ("," in target or targetPorts):
+if ("," in target and targetPorts) or ("," in target or targetPorts):
     targetList = target.split(",")
     portList = targetPorts.split(",")
     targetList = [s.strip() for s in targetList]
