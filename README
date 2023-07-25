@@ -1,6 +1,13 @@
+<Scanner.py>
 -Developed a robust multiprocessing port scanner in Python to efficiently scan multiple target addresses and ports 
 -Offered flexibility by accepting various input formats, including single ports, port ranges, and comma-separated port and IP address lists.
 -Supported scanning both by IP address and hostname, providing flexibility in target specification
 -Utilized regular expression for target address validation 
 -Employed exception handling for errors regarding socket connections and scanning 
 -Incorporated proper color changes in the command-line interface to enhance user experience
+-Identifies services running on ports
+
+<ipKitty.py>
+-Resolve IP address to hostname and vice versa, providing network information for given targets
+-Performs target validation 
+-Utilizes sockets to establish connection and retrieve information 
