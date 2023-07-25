@@ -15,7 +15,7 @@ def isValidTarget(target):
     else: 
         return False
     
-def checkList(targetList, portList):
+def validateList(targetList, portList):
     if not isValidTarget(targetList) and (int(portList) > 65536):
         print("\n\033[4m Check your target(s) and port(s)...")
         subprocess.Popen('color 0F', shell=True)
@@ -32,7 +32,7 @@ def checkList(targetList, portList):
 def scan(arg):
     target_ip, port = arg
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(2)
+    sock.settimeout(.1)
     try:
         sock.connect((target_ip, port))
         sock.close()
@@ -77,15 +77,21 @@ def findTarget(target):
 
 def banner(port, target_ip):
     print("\n")
-    if int(port) > 0: 
+    if "-" in port:
         print("*" * 52)
-        print(f"Scanning remote host ({target_ip}) for port {port} ")
+        print(f"Scanning remote host ({target_ip}) for ports {port} ")
         print("*" * 52)
-    else: 
-        print("*" * 52)
-        print(f"Scanning remote host ({target_ip}) for ports 1-1065")
-        print("*" * 52)
+    else:
 
+        if int(port) > 0: 
+            print("*" * 52)
+            print(f"Scanning remote host ({target_ip}) for port {port} ")
+            print("*" * 52)
+
+        else: 
+            print("*" * 52)
+            print(f"Scanning remote host ({target_ip}) for ports 1-1065")
+            print("*" * 52)
 
 if __name__ == '__main__':
     subprocess.call('cls', shell=True) # Clears screen
@@ -98,58 +104,122 @@ if __name__ == '__main__':
         ██║     ╚██████╔╝██║  ██║   ██║       ███████║╚██████╗██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║
         ╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝                                                                                                    
 """)
-    ports = range(1, 1065)
     pool = Pool(processes=10)
     target = input('Enter IPs/hostnames (separated by commas): ')
-    ports = input('Enter port(s) or 0 to skip (separated by commas): ')
+    ports = input('Enter port(s) or 0 to skip (list with commas/range with dash): ')
 
     if ("," in target and ports) or ("," in target or "," in ports):
         targetList = target.split(",")
         portList = ports.split(",")
         targetList = [s.strip() for s in targetList]
         portList = [s.strip() for s in portList]
-        if len(targetList) > len(portList):
+
+        if ("-" in ports):
+            portRange = ports.split("-")
+            ports1 = ports
             for x in range(len(targetList)):
-                for y in range(len(portList)):
-                    checkList(targetList[x], portList[y])
-                    target_ip = findTarget(targetList[x])
-                    banner(portList[y],target_ip)
-                    for port, status in pool.imap(scan, [(target_ip, int(portList[y])) for port in ports]):
-                        print(port, ':', 'Open' if status else 'Closed')
-                        break
-        elif len(targetList) < len(portList):
-            for x in range(len(portList)):
-                for y in range(len(targetList)):
-                    checkList(targetList[y], portList[x])
-                    target_ip = findTarget(targetList[y])
-                    banner(portList[x],target_ip)
-                    for port, status in pool.imap(scan, [(target_ip, int(portList[x])) for port in ports]):
-                        print(port, ':', 'Open' if status else 'Closed')
-                        break
+                validateList(targetList[x],portRange[0])
+                target_ip = findTarget(targetList[x])
+                banner(ports1,target_ip)
+                ports = range(int(portRange[0]), int(portRange[1]) + 1)
+                for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
+                    try:
+                        answer = socket.getservbyport(port)
+                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        
+                    except(socket.error):
+                        print(f"{port}: {'Open' if status else 'Closed'}")
         else:
-            for x in range(len(targetList)):
-                for y in range(len(portList)):
-                    checkList(targetList[x], portList[y])
-                    target_ip = findTarget(targetList[x])
-                    banner(portList[y],target_ip)
-                    for port, status in pool.imap(scan, [(target_ip, int(portList[y]))]):
-                        print(port, ':', 'Open' if status else 'Closed')
-                        break
+            if len(targetList) > len(portList):
+                for x in range(len(targetList)):
+                    for y in range(len(portList)):
+                        validateList(targetList[x], portList[y])
+                        target_ip = findTarget(targetList[x])
+                        banner(portList[y],target_ip)
+                        for port, status in pool.imap(scan, [(target_ip, int(portList[y])) for port in ports]):
+                            try:
+                                answer = socket.getservbyport(port)
+                                print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                                break
+                            except(socket.error):
+                                print(f"{port}: {'Open' if status else 'Closed'}")
+                                break
+            elif len(targetList) < len(portList):
+                # NEED TO EDIT THIS IN ORDER TO DISPLAY RESULTS BY IP 
+                for x in range(len(portList)):
+                    for y in range(len(targetList)):
+                        validateList(targetList[y], portList[x])
+                        target_ip = findTarget(targetList[y])
+                        banner(portList[x],target_ip)
+                        for port, status in pool.imap(scan, [(target_ip, int(portList[x])) for port in ports]):
+
+                            try:
+                                answer = socket.getservbyport(port)
+                                print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                                break
+                            except(socket.error):
+                                print(f"{port}: {'Open' if status else 'Closed'}")
+                                break
+            else:
+                for x in range(len(targetList)):
+                    for y in range(len(portList)):
+                        validateList(targetList[x], portList[y])
+                        target_ip = findTarget(targetList[x])
+                        banner(portList[y],target_ip)
+                        for port, status in pool.imap(scan, [(target_ip, int(portList[y]))]):
+                            try:
+                                answer = socket.getservbyport(port)
+                                print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                                break
+                            except(socket.error):
+                                print(f"{port}: {'Open' if status else 'Closed'}")
+                                break
     else:
-        target = target.strip()
-        if int(ports) != 0: 
-            checkList(target, ports)
+        if ("-" in ports):
+            portRange = ports.split("-")
+            validateList(target,portRange[0])
             target_ip = findTarget(target)
-            banner(ports, target_ip)
-            for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
-                print(port, ':', 'Open' if status else 'Closed')
-                break
+            banner(ports,target_ip)
+            ports = range(int(portRange[0]), int(portRange[1]) + 1)
+            for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
+                    try:
+                        answer = socket.getservbyport(port)
+                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        
+                    except(socket.error):
+                        print(f"{port}: {'Open' if status else 'Closed'}")
+                        
         else:
-            checkList(target, ports)
-            target_ip = findTarget(target)
-            banner(ports, target_ip)
-            ports = range(1, 1065)
-            for port, status in pool.imap(scan, [(target_ip, port) for port in ports]):
-                print(port, ':', 'Open' if status else 'Closed')
+            target = target.strip()
+            if int(ports) != 0: 
+                validateList(target, ports)
+                target_ip = findTarget(target)
+                banner(ports, target_ip)
+                for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
+                    try:
+                        answer = socket.getservbyport(port)
+                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        break
+                    except(socket.error):
+                        print(f"{port}: {'Open' if status else 'Closed'}")
+                        break
+            else:
+                validateList(target, ports)
+                target_ip = findTarget(target)
+                banner(ports, target_ip)
+                ports = range(1, 1065)
+                for port, status in pool.imap(scan, [(target_ip, port) for port in ports]):
+                    try:
+                        answer = socket.getservbyport(port)
+                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        break
+                    except(socket.error):
+                        print(f"{port}: {'Open' if status else 'Closed'}")
+                        break
+    
+    
+    
+    
+    
     print("\n")
     subprocess.Popen('color 0F', shell=True) # Change color
