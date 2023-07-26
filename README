@@ -1,4 +1,4 @@
-<Scanner.py>
+<scanner.py>
 -Developed a robust multiprocessing port scanner in Python to efficiently scan multiple target addresses and ports 
 -Offered flexibility by accepting various input formats, including single ports, port ranges, and comma-separated port and IP address lists.
 -Supported scanning both by IP address and hostname, providing flexibility in target specification
