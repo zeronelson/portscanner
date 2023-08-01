@@ -22,15 +22,12 @@ def isValidTarget(target):
 def isValidList(targetList, portList):
     if not isValidTarget(targetList) and (int(portList) > 65536):
         print(f"\n{Fore.LIGHTRED_EX} Check your target(s) and port(s)...{Style.RESET_ALL}")
-        #subprocess.Popen('color 0F', shell=True)
         sys.exit()
     if  isValidTarget(targetList) == False:
         print(f"\n{Fore.LIGHTRED_EX}Check your target(s)... '{targetList}' is not a valid target{Style.RESET_ALL}")
-        #subprocess.Popen('color 0F', shell=True)
         sys.exit()    
     if int(portList) >  65536:
         print(f"\n{Fore.LIGHTRED_EX}Check your port(s)... '{portList}' is not a valid port{Style.RESET_ALL}")
-        #subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
 def scan(arg):
