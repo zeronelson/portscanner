@@ -3,6 +3,7 @@ import subprocess
 import sys
 import re
 from multiprocessing import Pool
+from colorama import Fore, Style
 
 def isValidTarget(target):
     ipPattern = '^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$'
@@ -125,10 +126,10 @@ if __name__ == '__main__':
                 for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                         
                     except(socket.error):
-                        print(f"{port}: {'Open' if status else 'Closed'}")
+                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
         else:
             if len(targetList) > len(portList):
                 for x in range(len(targetList)):
@@ -139,10 +140,10 @@ if __name__ == '__main__':
                         for port, status in pool.imap(scan, [(target_ip, int(portList[y])) for port in ports]):
                             try:
                                 answer = socket.getservbyport(port)
-                                print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                                print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                                 break
                             except(socket.error):
-                                print(f"{port}: {'Open' if status else 'Closed'}")
+                                print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")                              
                                 break
             elif len(targetList) < len(portList):
                 # NEED TO EDIT THIS IN ORDER TO DISPLAY RESULTS BY IP (but cannot because the length of portList is greater than length of targetList so it produces an error)
@@ -155,10 +156,10 @@ if __name__ == '__main__':
 
                             try:
                                 answer = socket.getservbyport(port)
-                                print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                                print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                                 break
                             except(socket.error):
-                                print(f"{port}: {'Open' if status else 'Closed'}")
+                                print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
                                 break
             else:
                 for x in range(len(targetList)):
@@ -169,10 +170,10 @@ if __name__ == '__main__':
                         for port, status in pool.imap(scan, [(target_ip, int(portList[y]))]):
                             try:
                                 answer = socket.getservbyport(port)
-                                print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                                print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                                 break
                             except(socket.error):
-                                print(f"{port}: {'Open' if status else 'Closed'}")
+                                print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
                                 break
     else:
         if ("-" in ports):
@@ -184,10 +185,10 @@ if __name__ == '__main__':
             for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                         
                     except(socket.error):
-                        print(f"{port}: {'Open' if status else 'Closed'}")
+                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
                         
         else:
             target = target.strip()
@@ -198,10 +199,10 @@ if __name__ == '__main__':
                 for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                         break
                     except(socket.error):
-                        print(f"{port}: {'Open' if status else 'Closed'}")
+                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
                         break
             else:
                 isValidList(target, ports)
@@ -211,15 +212,10 @@ if __name__ == '__main__':
                 for port, status in pool.imap(scan, [(target_ip, port) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{port}: {'Open' if status else 'Closed'} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                         break
                     except(socket.error):
-                        print(f"{port}: {'Open' if status else 'Closed'}")
+                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
                         break
     
-    
-    
-    
-    
     print("\n")
-    subprocess.Popen('color 0F', shell=True) # Change color
