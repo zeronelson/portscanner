@@ -15,7 +15,7 @@ def isValidTarget(target):
     else: 
         return False
     
-def validateList(targetList, portList):
+def isValidList(targetList, portList):
     if not isValidTarget(targetList) and (int(portList) > 65536):
         print("\n\033[4m Check your target(s) and port(s)...")
         subprocess.Popen('color 0F', shell=True)
@@ -118,7 +118,7 @@ if __name__ == '__main__':
             portRange = ports.split("-")
             ports1 = ports
             for x in range(len(targetList)):
-                validateList(targetList[x],portRange[0])
+                isValidList(targetList[x],portRange[0])
                 target_ip = findTarget(targetList[x])
                 banner(ports1,target_ip)
                 ports = range(int(portRange[0]), int(portRange[1]) + 1)
@@ -133,7 +133,7 @@ if __name__ == '__main__':
             if len(targetList) > len(portList):
                 for x in range(len(targetList)):
                     for y in range(len(portList)):
-                        validateList(targetList[x], portList[y])
+                        isValidList(targetList[x], portList[y])
                         target_ip = findTarget(targetList[x])
                         banner(portList[y],target_ip)
                         for port, status in pool.imap(scan, [(target_ip, int(portList[y])) for port in ports]):
@@ -145,10 +145,10 @@ if __name__ == '__main__':
                                 print(f"{port}: {'Open' if status else 'Closed'}")
                                 break
             elif len(targetList) < len(portList):
-                # NEED TO EDIT THIS IN ORDER TO DISPLAY RESULTS BY IP 
+                # NEED TO EDIT THIS IN ORDER TO DISPLAY RESULTS BY IP (but cannot because the length of portList is greater than length of targetList so it produces an error)
                 for x in range(len(portList)):
                     for y in range(len(targetList)):
-                        validateList(targetList[y], portList[x])
+                        isValidList(targetList[y], portList[x])
                         target_ip = findTarget(targetList[y])
                         banner(portList[x],target_ip)
                         for port, status in pool.imap(scan, [(target_ip, int(portList[x])) for port in ports]):
@@ -163,7 +163,7 @@ if __name__ == '__main__':
             else:
                 for x in range(len(targetList)):
                     for y in range(len(portList)):
-                        validateList(targetList[x], portList[y])
+                        isValidList(targetList[x], portList[y])
                         target_ip = findTarget(targetList[x])
                         banner(portList[y],target_ip)
                         for port, status in pool.imap(scan, [(target_ip, int(portList[y]))]):
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     else:
         if ("-" in ports):
             portRange = ports.split("-")
-            validateList(target,portRange[0])
+            isValidList(target,portRange[0])
             target_ip = findTarget(target)
             banner(ports,target_ip)
             ports = range(int(portRange[0]), int(portRange[1]) + 1)
@@ -192,7 +192,7 @@ if __name__ == '__main__':
         else:
             target = target.strip()
             if int(ports) != 0: 
-                validateList(target, ports)
+                isValidList(target, ports)
                 target_ip = findTarget(target)
                 banner(ports, target_ip)
                 for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
@@ -204,7 +204,7 @@ if __name__ == '__main__':
                         print(f"{port}: {'Open' if status else 'Closed'}")
                         break
             else:
-                validateList(target, ports)
+                isValidList(target, ports)
                 target_ip = findTarget(target)
                 banner(ports, target_ip)
                 ports = range(1, 1065)
