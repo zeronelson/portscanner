@@ -4,6 +4,9 @@ import sys
 import re
 from multiprocessing import Pool
 from colorama import Fore, Style
+import signal
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 def isValidTarget(target):
     ipPattern = '^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$'
@@ -79,20 +82,22 @@ def findTarget(target):
 def banner(port, target_ip):
     print("\n")
     if "-" in port:
-        print("*" * 52)
+        print("*" * 55)
         print(f"Scanning remote host ({target_ip}) for ports {port} ")
-        print("*" * 52)
+        print("*" * 55)
+    elif "," in port:
+        print("*" * 55)
+        print(f"Scanning remote host ({target_ip}) for ports {port} ")
+        print("*" * 55)
     else:
-
         if int(port) > 0: 
-            print("*" * 52)
+            print("*" * 55)
             print(f"Scanning remote host ({target_ip}) for port {port} ")
-            print("*" * 52)
-
+            print("*" * 55)
         else: 
-            print("*" * 52)
+            print("*" * 55)
             print(f"Scanning remote host ({target_ip}) for ports 1-1065")
-            print("*" * 52)
+            print("*" * 55)
 
 if __name__ == '__main__':
     subprocess.call('cls', shell=True) # Clears screen
@@ -127,54 +132,26 @@ if __name__ == '__main__':
                     try:
                         answer = socket.getservbyport(port)
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
-                        
                     except(socket.error):
-                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
+                        print(f"{Fore.RED}{port:4d}: Closed ")
         else:
-            if len(targetList) > len(portList):
-                for x in range(len(targetList)):
+            for x in range(len(targetList)):
                     for y in range(len(portList)):
-                        isValidList(targetList[x], portList[y])
+                        isValidList(targetList[y], portList[y])
                         target_ip = findTarget(targetList[x])
-                        banner(portList[y],target_ip)
-                        for port, status in pool.imap(scan, [(target_ip, int(portList[y])) for port in ports]):
-                            try:
-                                answer = socket.getservbyport(port)
-                                print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
-                                break
-                            except(socket.error):
-                                print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")                              
-                                break
-            elif len(targetList) < len(portList):
-                # NEED TO EDIT THIS IN ORDER TO DISPLAY RESULTS BY IP (but cannot because the length of portList is greater than length of targetList so it produces an error)
-                for x in range(len(portList)):
-                    for y in range(len(targetList)):
-                        isValidList(targetList[y], portList[x])
-                        target_ip = findTarget(targetList[y])
-                        banner(portList[x],target_ip)
-                        for port, status in pool.imap(scan, [(target_ip, int(portList[x])) for port in ports]):
-
-                            try:
-                                answer = socket.getservbyport(port)
-                                print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
-                                break
-                            except(socket.error):
-                                print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
-                                break
-            else:
-                for x in range(len(targetList)):
-                    for y in range(len(portList)):
-                        isValidList(targetList[x], portList[y])
-                        target_ip = findTarget(targetList[x])
-                        banner(portList[y],target_ip)
-                        for port, status in pool.imap(scan, [(target_ip, int(portList[y]))]):
-                            try:
-                                answer = socket.getservbyport(port)
-                                print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
-                                break
-                            except(socket.error):
-                                print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
-                                break
+                        portString = ",".join(str(element) for element in portList)
+                        banner(portString,target_ip)   
+                        ports = range(int(min(portList)), int(max(portList))+1)
+                        # Loop through range, but only print the ports requested by the user
+                        for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
+                            if (str(port) in portList):
+                                try:
+                                    answer = socket.getservbyport(port)
+                                    print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
+                                    
+                                except(socket.error):
+                                    print(f"{Fore.RED}{port:4d}: Closed ")
+                        break
     else:
         if ("-" in ports):
             portRange = ports.split("-")
@@ -188,8 +165,7 @@ if __name__ == '__main__':
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
                         
                     except(socket.error):
-                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
-                        
+                        print(f"{Fore.RED}{port:4d}: Closed ")  
         else:
             target = target.strip()
             if int(ports) != 0: 
@@ -200,10 +176,9 @@ if __name__ == '__main__':
                     try:
                         answer = socket.getservbyport(port)
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
-                        break
                     except(socket.error):
-                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
-                        break
+                        print(f"{Fore.RED}{port:4d}: Closed ")
+                    break         
             else:
                 isValidList(target, ports)
                 target_ip = findTarget(target)
@@ -213,9 +188,9 @@ if __name__ == '__main__':
                     try:
                         answer = socket.getservbyport(port)
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
-                        break
+                        
                     except(socket.error):
-                        print(f"{Fore.RED}{port:4d}: Closed {Style.RESET_ALL}")
-                        break
+                        print(f"{Fore.RED}{port:4d}: Closed ")
+                        
     
-    print("\n")
+    print(f"\n{Fore.WHITE}{Style.NORMAL}")
