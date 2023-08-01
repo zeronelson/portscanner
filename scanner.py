@@ -21,16 +21,16 @@ def isValidTarget(target):
     
 def isValidList(targetList, portList):
     if not isValidTarget(targetList) and (int(portList) > 65536):
-        print("\n\033[4m Check your target(s) and port(s)...")
-        subprocess.Popen('color 0F', shell=True)
+        print(f"\n{Fore.LIGHTRED_EX} Check your target(s) and port(s)...{Style.RESET_ALL}")
+        #subprocess.Popen('color 0F', shell=True)
         sys.exit()
     if  isValidTarget(targetList) == False:
-        print(f"\nCheck your target(s)... {targetList} is not a valid target")
-        subprocess.Popen('color 0F', shell=True)
+        print(f"\n{Fore.LIGHTRED_EX}Check your target(s)... '{targetList}' is not a valid target{Style.RESET_ALL}")
+        #subprocess.Popen('color 0F', shell=True)
         sys.exit()    
     if int(portList) >  65536:
-        print(f"\nCheck your port(s)... {portList} is not a valid port")
-        subprocess.Popen('color 0F', shell=True)
+        print(f"\n{Fore.LIGHTRED_EX}Check your port(s)... '{portList}' is not a valid port{Style.RESET_ALL}")
+        #subprocess.Popen('color 0F', shell=True)
         sys.exit()
 
 def scan(arg):
@@ -51,36 +51,20 @@ def findTarget(target):
     hnPattern = '^[A-Za-z0-9]+\.[A-Za-z]+$'
     hnMatch = bool(re.match(hnPattern, givenData))
 
-    count = 0
-    if ipMatch:
-        return givenData
-    if hnMatch:
-        target_ip = socket.gethostbyname(givenData)
-        return target_ip
-
-    while not ipMatch and not hnMatch:
-        if count == 0:
-            print(">>> Invalid hostname or IP")
-        count += 1
-        if count == 2:
-            print(">>> One more chance")
-        if count == 3:
-            print("Exiting...")
-            subprocess.Popen('color 0F', shell=True)
-            sys.exit()
-        givenData = input("Enter full hostname or IP: ")
-        ipMatch = bool(re.match(ipPattern, givenData))
-        hnMatch = bool(re.match(hnPattern, givenData))
-
+    try:
+        count = 0
         if ipMatch:
-            target_ip = givenData 
-            return target_ip
+            return givenData
         if hnMatch:
             target_ip = socket.gethostbyname(givenData)
             return target_ip
+    except(socket.gaierror):
+        print(f"{Fore.LIGHTRED_EX}Target '{givenData}' could not be located{Style.RESET_ALL}")
+        sys.exit()
 
 def banner(port, target_ip):
     print("\n")
+    print(f"{Fore.RED}")
     if "-" in port:
         print("*" * 55)
         print(f"Scanning remote host ({target_ip}) for ports {port} ")
@@ -114,11 +98,20 @@ if __name__ == '__main__':
     target = input('Enter IPs/hostnames (separated by commas): ')
     ports = input('Enter port(s) or 0 to skip (list with commas/range with dash): ')
 
+
+
+
     if ("," in target and ports) or ("," in target or "," in ports):
         targetList = target.split(",")
         portList = ports.split(",")
         targetList = [s.strip() for s in targetList]
         portList = [s.strip() for s in portList]
+
+        for x in range(len(targetList)):
+            target_ip = findTarget(targetList[x])
+            if target_ip == None:
+                print(f"{Fore.LIGHTRED_EX}Target '{targetList[x]}' could not be located{Style.RESET_ALL}")
+                sys.exit()
 
         if ("-" in ports):
             portRange = ports.split("-")
@@ -131,7 +124,7 @@ if __name__ == '__main__':
                 for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
                     except(socket.error):
                         print(f"{Fore.RED}{port:4d}: Closed ")
         else:
@@ -147,7 +140,7 @@ if __name__ == '__main__':
                             if (str(port) in portList):
                                 try:
                                     answer = socket.getservbyport(port)
-                                    print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
+                                    print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
                                     
                                 except(socket.error):
                                     print(f"{Fore.RED}{port:4d}: Closed ")
@@ -162,7 +155,7 @@ if __name__ == '__main__':
             for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
                         
                     except(socket.error):
                         print(f"{Fore.RED}{port:4d}: Closed ")  
@@ -175,7 +168,7 @@ if __name__ == '__main__':
                 for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
                     except(socket.error):
                         print(f"{Fore.RED}{port:4d}: Closed ")
                     break         
@@ -187,7 +180,7 @@ if __name__ == '__main__':
                 for port, status in pool.imap(scan, [(target_ip, port) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
-                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL} ({answer})")
+                        print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
                         
                     except(socket.error):
                         print(f"{Fore.RED}{port:4d}: Closed ")
