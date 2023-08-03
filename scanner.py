@@ -95,9 +95,6 @@ if __name__ == '__main__':
     target = input('Enter IPs/hostnames (separated by commas): ')
     ports = input('Enter port(s) or 0 to skip (list with commas/range with dash): ')
 
-
-
-
     if ("," in target and ports) or ("," in target or "," in ports):
         targetList = target.split(",")
         portList = ports.split(",")
@@ -138,7 +135,6 @@ if __name__ == '__main__':
                                 try:
                                     answer = socket.getservbyport(port)
                                     print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
-                                    
                                 except(socket.error):
                                     print(f"{Fore.RED}{port:4d}: Closed ")
                         break
@@ -153,7 +149,6 @@ if __name__ == '__main__':
                     try:
                         answer = socket.getservbyport(port)
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
-                        
                     except(socket.error):
                         print(f"{Fore.RED}{port:4d}: Closed ")  
         else:
@@ -162,7 +157,7 @@ if __name__ == '__main__':
                 isValidList(target, ports)
                 target_ip = findTarget(target)
                 banner(ports, target_ip)
-                for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
+                for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
@@ -178,9 +173,7 @@ if __name__ == '__main__':
                     try:
                         answer = socket.getservbyport(port)
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
-                        
                     except(socket.error):
                         print(f"{Fore.RED}{port:4d}: Closed ")
                         
-    
     print(f"\n{Fore.WHITE}{Style.NORMAL}")
