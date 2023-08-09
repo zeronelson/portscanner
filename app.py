@@ -7,6 +7,7 @@ import sys
 import re
 from multiprocessing import Pool
 from colorama import Fore, Style
+from tkintertable import TableCanvas, TableModel
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 PORT = '1'
@@ -179,6 +180,7 @@ def main(TARGET, PORT):
     print(f"\n{Fore.WHITE}{Style.NORMAL}")
     sys.exit()
 
+##########################################################################################################
 # Set up the window
 window = tk.Tk()
 window.title("Port Scanner")
@@ -216,6 +218,20 @@ btn_port = tk.Button(
 )
 
 btn_port.grid(row=1, column=3)
+############################################################################################################
+
+tableWin = tk.Tk()
+tframe = tk.Frame(master=tableWin)
+tframe.pack()
+table = TableCanvas(tframe, read_only=True)
+
+table.addColumn(newname='Port')
+
+table.show()
+table.redraw()
+
+
+
 
 if __name__ == '__main__':
     window.mainloop()
