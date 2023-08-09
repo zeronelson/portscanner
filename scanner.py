@@ -49,7 +49,6 @@ def findTarget(target):
     hnMatch = bool(re.match(hnPattern, givenData))
 
     try:
-        count = 0
         if ipMatch:
             return givenData
         if hnMatch:
@@ -94,6 +93,7 @@ if __name__ == '__main__':
     pool = Pool(processes=10)
     target = input('Enter IPs/hostnames (separated by commas): ')
     ports = input('Enter port(s) or 0 to skip (list with commas/range with dash): ')
+
 
     if ("," in target and ports) or ("," in target or "," in ports):
         targetList = target.split(",")
@@ -140,6 +140,7 @@ if __name__ == '__main__':
                         break
     else:
         if ("-" in ports):
+            target = target.strip()
             portRange = ports.split("-")
             isValidList(target,portRange[0])
             target_ip = findTarget(target)
@@ -151,13 +152,14 @@ if __name__ == '__main__':
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
                     except(socket.error):
                         print(f"{Fore.RED}{port:4d}: Closed ")  
+                        
         else:
             target = target.strip()
             if int(ports) != 0: 
                 isValidList(target, ports)
                 target_ip = findTarget(target)
                 banner(ports, target_ip)
-                for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
+                for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
                     try:
                         answer = socket.getservbyport(port)
                         print(f"{Fore.GREEN}{port:4d}: Open {Style.RESET_ALL}  ({answer})")
