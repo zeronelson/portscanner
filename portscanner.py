@@ -7,24 +7,6 @@ import signal
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-def isValidTarget(target):
-    try: 
-        socket.inet_aton(target)
-        return True
-    except:
-        return True
-   
-def isValidList(targetList, portList):
-    if not isValidTarget(targetList) and (int(portList) > 65536):
-        print(f"\n{Fore.LIGHTRED_EX} Check your target(s) and port(s)...{Style.RESET_ALL}")
-        sys.exit()
-    if  isValidTarget(targetList) == False:
-        print(f"\n{Fore.LIGHTRED_EX}Check your target(s)... '{targetList}' is not a valid target{Style.RESET_ALL}")
-        sys.exit()    
-    if int(portList) >  65536:
-        print(f"\n{Fore.LIGHTRED_EX}Check your port(s)... '{portList}' is not a valid port{Style.RESET_ALL}")
-        sys.exit()
-
 def scan(arg):
     target_ip, port = arg
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,7 +18,7 @@ def scan(arg):
     except (socket.timeout, socket.error):
         return port, False
     
-def validateTarget(target):
+def returnTarget(target):
     try: 
         socket.inet_aton(target)
         return target
@@ -46,28 +28,30 @@ def validateTarget(target):
         except:
             return None
 
-def banner(port, target_ip):
+def banner(target_name, port, target_ip):
     print("\n")
     print(f"{Fore.RED}")
+    print(target_name)
+    target_info = target_name + ": " + target_ip
     if "-" in port:
-        print("*" * 55)
+        print("*" * 60)
         # TODO - How to display hostname
-        print(f"Scanning remote host ({target_ip}) for ports {port} ")
-        print("*" * 55)
+        print(f"Scanning host ({target_info}) for ports {port} ")
+        print("*" * 60)
     elif "," in port:
         # TODO - Can delineate ports 
-        print("*" * 55)
-        print(f"Scanning remote host ({target_ip}) for ports {port} ")
-        print("*" * 55)
-    '''else:
+        print("*" * 60)
+        print(f"Scanning host ({target_ip}) for ports {port} ")
+        print("*" * 60)
+    else:
         if int(port) > 0: 
-            print("*" * 55)
-            print(f"Scanning remote host ({target_ip}) for port {port} ")
-            print("*" * 55)
+            print("*" * 60)
+            print(f"Scanning host ({target_ip}) for port {port} ")
+            print("*" * 60)
         else: 
-            print("*" * 55)
-            print(f"Scanning remote host ({target_ip}) for ports 1-1065")
-            print("*" * 55)'''
+            print("*" * 60)
+            print(f"Scanning host ({target_ip}) for ports 1-1065")
+            print("*" * 60)
 
 def displayScan():
     try:
@@ -78,7 +62,6 @@ def displayScan():
 
 if __name__ == '__main__':
     subprocess.call('clear', shell=True) # Clears screen
-    #subprocess.Popen('color 4', shell=True) # Change color
     '''print("""
         ██████╗  ██████╗ ██████╗ ████████╗    ███████╗ ██████╗ █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗ 
         ██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝    ██╔════╝██╔════╝██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗
@@ -87,12 +70,14 @@ if __name__ == '__main__':
         ██║     ╚██████╔╝██║  ██║   ██║       ███████║╚██████╗██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║
         ╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝                                                                                                    
 """)'''
-    pool = Pool(processes=10)
+    pool = Pool(processes=30)
     #target = input('Enter IPs/hostnames (separated by commas): ')
-    #ports = input('Enter port(s) or 0 to skip (list with commas/range with dash): ')
+    ports = input('Enter port(s) or 0 to skip (list with commas/range with dash): ')
     
-    target = "target.com, walmart.com"
-    ports = "1-3"
+    target = "target.com"
+    
+    if (ports == ""):
+        ports = "0-200"
 
     # If input is a list
     if ("," in target or "," in ports):
@@ -100,61 +85,60 @@ if __name__ == '__main__':
         targetList, portList = target.split(","), ports.split(",")
         targetList, portList = [s.strip() for s in targetList], [s.strip() for s in portList]
         
-        # Validate target exists
+        # Validate target IP was found
         for x in range(len(targetList)):
-            target_ip = validateTarget(targetList[x])
-            if target_ip == None:
+            if returnTarget(targetList[x]) == None:
                 print(f"{Fore.LIGHTRED_EX}Target '{targetList[x]}' could not be located{Style.RESET_ALL}")
                 sys.exit()
 
+        # If target is a list and port is a range
         if ("-" in ports):
             portRange = ports.split("-")
             ports1 = ports
             for x in range(len(targetList)):
-                #isValidList(targetList[x],portRange[0])
-                #target_ip = validateTarget(targetList[x])
-                banner(ports1,target_ip)
+                banner(targetList[x], ports1, returnTarget(targetList[x]))
                 ports = range(int(portRange[0]), int(portRange[1]) + 1)
                 for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
                     displayScan()
+
+        # Else if target and port is a list
         else:
+            # Remove invalid port from list 
+            for x in range(len(portList)):
+                if (int(portList[x]) > 66036 or int(portList[x]) < 0):
+                    print(f"{Fore.LIGHTRED_EX}Port '{portList[x]}' removed from list{Style.RESET_ALL}")
+                    portList.pop(x)
+                   
             for x in range(len(targetList)):
                     for y in range(len(portList)):
-                        isValidList(targetList[y], portList[y])
-                        target_ip = validateTarget(targetList[x])
+                        target_ip = returnTarget(targetList[x])
                         portString = ",".join(str(element) for element in portList)
-                        banner(portString,target_ip)   
+                        banner(targetList[x], portString,target_ip)   
                         ports = range(int(min(portList)), int(max(portList))+1)
-                        # Loop through range, but only print the ports requested by the user
                         for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
                             if (str(port) in portList):
                                 displayScan()
-                        break
     else:
+        # If target is invalid
+        if (returnTarget(target) == None):
+            print(f"{Fore.LIGHTRED_EX}Target '{target}' could not be located{Style.RESET_ALL}")
+            sys.exit()
+
+        
+
         if ("-" in ports):
-            target = target.strip()
             portRange = ports.split("-")
-            isValidList(target,portRange[0])
-            target_ip = validateTarget(target)
-            banner(ports,target_ip)
+            print(portRange)
+            target_ip = returnTarget(target.strip())
+            banner(target, ports,target_ip)
             ports = range(int(portRange[0]), int(portRange[1]) + 1)
             for port, status in pool.imap(scan, [(target_ip, int(port)) for port in ports]):
-                    displayScan()        
+                    displayScan()   
+
+        # Single target and port     
         else:
-            target = target.strip()
-            if int(ports) != 0: 
-                target_ip = validateTarget(target)
-                isValidList(target, ports)
-                banner(ports, target_ip)
-                for port, status in pool.imap(scan, [(target_ip, int(ports)) for port in ports]):
-                    displayScan()
-                    break         
-            else:
-                isValidList(target, ports)
-                target_ip = validateTarget(target)
-                banner(ports, target_ip)
-                ports = range(1, 1065)
-                for port, status in pool.imap(scan, [(target_ip, port) for port in ports]):
-                    displayScan()
-                        
-    print(f"\n{Fore.WHITE}{Style.NORMAL}")
+            target_ip = returnTarget(target.strip())
+            banner(target, ports, target_ip)
+            for port, status in pool.imap(scan, [(target_ip, int(ports)) for ports in ports]):
+                displayScan()
+                  
